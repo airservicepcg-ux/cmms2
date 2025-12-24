@@ -1,80 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Create Work Order</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Create Work Order</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      padding: 20px;
-    }
-    .card {
-      max-width: 500px;
-      margin: auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    label {
-      display: block;
-      margin-top: 12px;
-      font-weight: bold;
-    }
-    input, select, textarea, button {
-      width: 100%;
-      padding: 8px;
-      margin-top: 6px;
-    }
-    button {
-      margin-top: 16px;
-      background: #1976d2;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #125aa0;
-    }
-  </style>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 20px;
+}
+
+/* ===== TOP NAV ===== */
+.top-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #1f3c88;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.top-nav button {
+  background: white;
+  color: #1f3c88;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.top-nav button:hover {
+  background: #e6e6e6;
+}
+
+.nav-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* ===== CARD ===== */
+.card {
+  max-width: 520px;
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  margin: auto;
+}
+
+h1 {
+  margin-top: 0;
+  text-align: center;
+}
+
+label {
+  font-weight: bold;
+  margin-top: 12px;
+  display: block;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+button.submit-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  background: #1f3c88;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button.submit-btn:hover {
+  background: #163072;
+}
+</style>
 </head>
 
 <body>
 
+<!-- ===== TOP NAV ===== -->
+<div class="top-nav">
+  <button onclick="goHome()">⬅ Home</button>
+  <span class="nav-title">Create Work Order</span>
+</div>
+
+<!-- ===== FORM CARD ===== -->
 <div class="card">
-  <h2>Create Work Order</h2>
+  <h1>Create Work Order</h1>
 
   <label>Asset ID</label>
-  <input id="asset_id" value="TEST-ASSET">
+  <select id="asset_id">
+    <option value="">-- Select Asset --</option>
+  </select>
 
   <label>Line</label>
   <select id="line">
     <option>Line 1</option>
     <option>Line 2</option>
+    <option>Line 3</option>
   </select>
 
   <label>Problem</label>
-  <textarea id="problem">Test problem</textarea>
+  <textarea id="problem"></textarea>
 
   <label>Priority</label>
   <select id="priority">
-    <option>Low</option>
+    <option>Critical</option>
+    <option>High</option>
     <option>Medium</option>
-    <option selected>Critical</option>
+    <option>Low</option>
   </select>
 
   <label>Owner</label>
-  <input id="owner" value="Tester">
+  <input type="text" id="owner"/>
 
-  <button onclick="submitWO()">Submit Work Order</button>
+  <button class="submit-btn" onclick="submitWO()">Submit Work Order</button>
 </div>
 
 <script>
-async function submitWO() {
+/* ===== CONFIG ===== */
+const API_URL = "https://script.google.com/macros/s/AKfycbyMM20DT2UI1MH2BE3dsim7t94Ce6PsVM4R3CwsGCsjwE2s7BrRAZjZUa-v14hl_N9BJw/exec";
 
+/* ===== NAV ===== */
+function goHome() {
+  window.location.href = "https://airservicepcg-ux.github.io/CMMS/";
+}
+
+/* ===== LOAD ASSET ===== */
+fetch(API_URL + "?mode=asset")
+  .then(res => res.json())
+  .then(data => {
+    const sel = document.getElementById("asset_id");
+    data.forEach(a => {
+      const opt = document.createElement("option");
+      opt.value = a;
+      opt.textContent = a;
+      sel.appendChild(opt);
+    });
+  })
+  .catch(() => alert("Load Asset failed"));
+
+/* ===== SUBMIT ===== */
+function submitWO() {
   const payload = {
     asset_id: document.getElementById("asset_id").value,
     line: document.getElementById("line").value,
@@ -83,30 +166,18 @@ async function submitWO() {
     owner: document.getElementById("owner").value
   };
 
-  const API_URL =
-    "https://script.google.com/macros/s/AKfycbyMM20DT2UI1MH2BE3dsim7t94Ce6PsVM4R3CwsGCsjwE2s7BrRAZjZUa-v14hl_N9BJw/exec";
-
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-
-    const result = await res.json();
-
-    if (result.status === "success") {
-      alert("✅ Work Order Created : " + result.wo_id);
-    } else {
-      alert("❌ Error : " + result.message);
-    }
-
-  } catch (err) {
-    alert("❌ Network Error");
-    console.error(err);
-  }
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(r => {
+    alert("Created : " + r.wo_id);
+    location.reload();
+  })
+  .catch(() => alert("Submit failed"));
 }
 </script>
 
 </body>
 </html>
-
