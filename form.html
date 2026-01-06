@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Create Work Order</title>
 
-<!-- ===== QR LIB ===== -->
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
@@ -18,7 +17,6 @@ body {
 
 .top-nav {
   display: flex;
-  align-items: center;
   gap: 12px;
   background: #1f3c88;
   color: white;
@@ -34,7 +32,6 @@ body {
   padding: 8px 14px;
   border-radius: 6px;
   font-weight: bold;
-  cursor: pointer;
 }
 
 .card {
@@ -59,22 +56,49 @@ input, textarea, select {
   border: 1px solid #ccc;
 }
 
+/* ===== Submit Button UX ===== */
 .submit-btn {
   margin-top: 20px;
   width: 100%;
   padding: 12px;
-  background: #1f3c88;
+  background: linear-gradient(135deg, #1f3c88, #274bb5);
   color: white;
   border: none;
   border-radius: 8px;
   font-size: 16px;
   font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #152a63;
+  transition: all 0.15s ease;
 }
 
-#qr-reader {
+.submit-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #152a63;
+}
+
+.submit-btn.loading {
+  background: #999;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.submit-btn.success {
+  background: #2e7d32;
+  box-shadow: 0 6px 0 #1b5e20;
+}
+
+#qr-reader { display:none; margin-top:10px; }
+
+.photo-btn {
+  margin-top: 8px;
   width: 100%;
-  margin-top: 10px;
-  display: none;
+  padding: 10px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
 }
 
 #preview img {
@@ -100,6 +124,18 @@ input, textarea, select {
 <select id="asset_id">
   <option value="">-- Select Asset --</option>
 </select>
+  
+  <div id="assetDetail" style="display:none; border:1px solid #ddd; padding:12px; border-radius:8px; margin-top:10px;">
+  <img id="assetImage" style="max-width:100%; border-radius:6px; margin-bottom:8px;" />
+
+  <div><b>ชื่อเครื่อง:</b> <span id="d_name"></span></div>
+  <div><b>ประเภท:</b> <span id="d_class"></span></div>
+  <div><b>กำลังไฟ:</b> <span id="d_kw"></span> kW / <span id="d_hp"></span> HP</div>
+  <div><b>Line:</b> <span id="d_line"></span></div>
+  <div><b>Location:</b> <span id="d_location"></span></div>
+  <div><b>Status:</b> <span id="d_status"></span></div>
+</div>
+
 
 <button type="button" onclick="openQRScanner()">📷 Scan Asset QR</button>
 <div id="qr-reader"></div>
@@ -125,22 +161,35 @@ input, textarea, select {
 <label>Owner</label>
 <input id="owner"/>
 
-<label>Photo (Max 4 images)</label>
-<input type="file" id="photos" accept="image/*" capture="environment" multiple>
+<label>Email</label>
+<input type="email" id="email" placeholder="example@email.com"/>
+
+<label>Phone Number</label>
+<input type="tel" id="phone" placeholder="08xxxxxxxx"/>
+
+<label>Photo (ถ่ายได้สูงสุด 4 รูป)</label>
+<button type="button" class="photo-btn" onclick="takePhoto()">📸 ถ่ายรูป</button>
+<div id="photo-count">0 / 4</div>
+
+<input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none"/>
 <div id="preview"></div>
 
-<button class="submit-btn" onclick="submitWO()">Submit Work Order</button>
+<button id="submitBtn" class="submit-btn" onclick="submitWO()">
+  Submit Work Order
+</button>
+
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyMM20DT2UI1MH2BE3dsim7t94Ce6PsVM4R3CwsGCsjwE2s7BrRAZjZUa-v14hl_N9BJw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxqmuz8OGIeATVLwpsC2xKX-8fZWjzwFch6v_Q50LiqBmXofmkw6xdUoogLgILjtdS5fQ/exec";
 
+/* NAV */
 function goHome(){
-  location.href = "https://airservicepcg-ux.github.io/CMMS/";
+  location.href="https://airservicepcg-ux.github.io/CMMS/";
 }
 
-/* ===== Load Asset ===== */
-fetch(API_URL + "?mode=asset")
+/* LOAD ASSET */
+fetch(API_URL+"?mode=asset")
 .then(r=>r.json())
 .then(list=>{
   const sel=document.getElementById("asset_id");
@@ -151,80 +200,100 @@ fetch(API_URL + "?mode=asset")
   });
 });
 
-/* ===== QR ===== */
+/* QR */
 let qr;
 function openQRScanner(){
   document.getElementById("qr-reader").style.display="block";
   document.getElementById("closeQR").style.display="block";
-  qr = new Html5Qrcode("qr-reader");
-  qr.start(
-    { facingMode:"environment" },
-    { fps:10, qrbox:250 },
-    text=>{
-      document.getElementById("asset_id").value=text.trim();
-      closeQR();
-    }
-  );
+  qr=new Html5Qrcode("qr-reader");
+  qr.start({facingMode:"environment"},{fps:10,qrbox:250},txt=>{
+    document.getElementById("asset_id").value=txt.trim();
+    closeQR();
+  });
 }
 function closeQR(){
-  if(qr){ qr.stop(); }
+  if(qr) qr.stop();
   document.getElementById("qr-reader").style.display="none";
   document.getElementById("closeQR").style.display="none";
 }
 
-/* ===== PHOTO ===== */
-const photos=document.getElementById("photos");
-const preview=document.getElementById("preview");
+/* PHOTO */
+let images=[];
+const maxPhotos=4;
 
-photos.addEventListener("change",()=>{
-  preview.innerHTML="";
-  if(photos.files.length>4){
-    alert("เลือกได้ไม่เกิน 4 รูป");
-    photos.value="";
+function takePhoto(){
+  if(images.length>=maxPhotos){
+    alert("ครบ 4 รูปแล้ว");
     return;
   }
-  [...photos.files].forEach(f=>{
-    const r=new FileReader();
-    r.onload=e=>{
-      const img=document.createElement("img");
-      img.src=e.target.result;
-      preview.appendChild(img);
-    };
-    r.readAsDataURL(f);
-  });
-});
-
-function getImages(){
-  return Promise.all([...photos.files].map(f=>{
-    return new Promise(res=>{
-      const r=new FileReader();
-      r.onload=()=>res(r.result);
-      r.readAsDataURL(f);
-    });
-  }));
+  document.getElementById("cameraInput").click();
 }
 
-/* ===== SUBMIT ===== */
-async function submitWO(){
-  const images=await getImages();
-  const payload={
-    asset_id:asset_id.value,
-    line:line.value,
-    problem:problem.value,
-    priority:priority.value,
-    owner:owner.value,
-    images:images
+document.getElementById("cameraInput").addEventListener("change",()=>{
+  const file=cameraInput.files[0];
+  if(!file) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    images.push(r.result);
+    const img=document.createElement("img");
+    img.src=r.result;
+    preview.appendChild(img);
+    document.getElementById("photo-count").textContent=images.length+" / "+maxPhotos;
   };
+  r.readAsDataURL(file);
+});
 
-  fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify(payload)
-  })
-  .then(r=>r.json())
-  .then(d=>{
-    alert("Created "+d.wo_id);
-    location.reload();
-  });
+/* SUBMIT WITH UX */
+async function submitWO(){
+  const btn=document.getElementById("submitBtn");
+  if(btn.classList.contains("loading")) return;
+
+  btn.classList.add("loading");
+  btn.disabled=true;
+  btn.innerText="⏳ Sending...";
+
+  try{
+    const payload={
+      asset_id:asset_id.value,
+      line:line.value,
+      problem:problem.value,
+      priority:priority.value,
+      owner:owner.value,
+      email:email.value,
+      phone:phone.value,
+      images:images
+    };
+
+    const res=await fetch(API_URL,{
+      method:"POST",
+      body:JSON.stringify(payload)
+    });
+
+    const d=await res.json();
+
+    if(d.status==="success"){
+      btn.classList.remove("loading");
+      btn.classList.add("success");
+      btn.innerText="✅ Created";
+
+      alert("Created "+d.wo_id);
+
+      setTimeout(()=>{
+        btn.classList.remove("success");
+        btn.innerText="Submit Work Order";
+        btn.disabled=false;
+        location.reload();
+      },1200);
+    }else{
+      throw new Error(d.message||"Submit failed");
+    }
+  }catch(err){
+    alert("❌ Error sending data");
+    console.error(err);
+    btn.classList.remove("loading");
+    btn.innerText="Submit Work Order";
+    btn.disabled=false;
+  }
 }
 </script>
 
