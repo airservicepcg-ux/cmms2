@@ -8,105 +8,94 @@
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
-body {
+body{
   font-family: Arial, sans-serif;
-  background: #f4f6f8;
-  margin: 0;
-  padding: 20px;
+  background:#f4f6f8;
+  margin:0;
+  padding:20px;
 }
-
-.top-nav {
-  display: flex;
-  gap: 12px;
-  background: #1f3c88;
-  color: white;
-  padding: 12px 20px;
-  border-radius: 10px;
-  margin-bottom: 20px;
+.top-nav{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:#1f3c88;
+  color:#fff;
+  padding:12px 20px;
+  border-radius:10px;
+  margin-bottom:20px;
 }
-
-.top-nav button {
-  background: white;
-  color: #1f3c88;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-weight: bold;
+.top-nav button{
+  background:#fff;
+  color:#1f3c88;
+  border:none;
+  padding:6px 12px;
+  border-radius:6px;
+  font-weight:bold;
 }
-
-.card {
-  max-width: 520px;
-  background: white;
-  padding: 24px;
-  border-radius: 12px;
-  margin: auto;
+.card{
+  max-width:520px;
+  background:#fff;
+  padding:24px;
+  border-radius:12px;
+  margin:auto;
 }
-
-label {
-  font-weight: bold;
-  margin-top: 12px;
-  display: block;
+label{
+  font-weight:bold;
+  margin-top:12px;
+  display:block;
 }
-
-input, textarea, select {
-  width: 100%;
-  padding: 10px;
-  margin-top: 6px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+input, textarea, select{
+  width:100%;
+  padding:10px;
+  margin-top:6px;
+  border-radius:6px;
+  border:1px solid #ccc;
 }
-
-/* ===== Submit Button UX ===== */
-.submit-btn {
-  margin-top: 20px;
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(135deg, #1f3c88, #274bb5);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 6px 0 #152a63;
-  transition: all 0.15s ease;
+.submit-btn{
+  margin-top:20px;
+  width:100%;
+  padding:12px;
+  background:#1f3c88;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+  font-weight:bold;
 }
-
-.submit-btn:active {
-  transform: translateY(4px);
-  box-shadow: 0 2px 0 #152a63;
+.submit-btn:disabled{
+  background:#999;
 }
-
-.submit-btn.loading {
-  background: #999;
-  box-shadow: none;
-  cursor: not-allowed;
+.photo-btn{
+  margin-top:8px;
+  width:100%;
+  padding:10px;
+  background:#4caf50;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  font-weight:bold;
 }
-
-.submit-btn.success {
-  background: #2e7d32;
-  box-shadow: 0 6px 0 #1b5e20;
+#preview img{
+  width:100%;
+  max-height:300px;
+  object-fit:contain;
+  border-radius:8px;
+  margin-top:10px;
 }
-
-#qr-reader { display:none; margin-top:10px; }
-
-.photo-btn {
-  margin-top: 8px;
-  width: 100%;
-  padding: 10px;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
+#qr-reader{
+  display:none;
+  margin-top:10px;
 }
-
-#preview img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 6px;
-  margin: 5px;
+.asset-box{
+  border:1px solid #ddd;
+  padding:12px;
+  border-radius:8px;
+  margin-top:10px;
+  background:#fafafa;
+}
+.status-text{
+  margin-top:10px;
+  font-weight:bold;
 }
 </style>
 </head>
@@ -115,40 +104,38 @@ input, textarea, select {
 
 <div class="top-nav">
   <button onclick="goHome()">⬅ Home</button>
-  <span>Create Work Order</span>
+  <b>Create Work Order</b>
 </div>
 
 <div class="card">
 
 <label>Asset ID</label>
-<select id="asset_id">
-  <option value="">-- Select Asset --</option>
-</select>
-  
-  <div id="assetDetail" style="display:none; border:1px solid #ddd; padding:12px; border-radius:8px; margin-top:10px;">
-  <img id="assetImage" style="max-width:100%; border-radius:6px; margin-bottom:8px;" />
+<select id="asset_id"></select>
+<button type="button" onclick="openQRScanner()">📷 Scan Asset QR</button>
 
+<div id="assetDetail" class="asset-box" style="display:none;">
   <div><b>ชื่อเครื่อง:</b> <span id="d_name"></span></div>
   <div><b>ประเภท:</b> <span id="d_class"></span></div>
   <div><b>กำลังไฟ:</b> <span id="d_kw"></span> kW / <span id="d_hp"></span> HP</div>
   <div><b>Line:</b> <span id="d_line"></span></div>
   <div><b>Location:</b> <span id="d_location"></span></div>
   <div><b>Status:</b> <span id="d_status"></span></div>
+  <div style="margin-top:6px;"><b>รายละเอียด:</b></div>
+  <div id="d_desc" style="white-space:pre-wrap;"></div>
 </div>
 
-
-<button type="button" onclick="openQRScanner()">📷 Scan Asset QR</button>
 <div id="qr-reader"></div>
-<button type="button" onclick="closeQR()" id="closeQR" style="display:none;">❌ Close Scanner</button>
+<button id="closeQR" style="display:none;" onclick="closeQR()">❌ Close Scanner</button>
 
 <label>Line</label>
 <select id="line">
   <option>Line 1</option>
   <option>Line 2</option>
+  <option>Line 3</option>
 </select>
 
 <label>Problem</label>
-<textarea id="problem"></textarea>
+<textarea id="problem" placeholder="อธิบายอาการ / ปัญหาที่พบ"></textarea>
 
 <label>Priority</label>
 <select id="priority">
@@ -162,137 +149,169 @@ input, textarea, select {
 <input id="owner"/>
 
 <label>Email</label>
-<input type="email" id="email" placeholder="example@email.com"/>
+<input type="email" id="email"/>
 
-<label>Phone Number</label>
-<input type="tel" id="phone" placeholder="08xxxxxxxx"/>
+<label>Phone</label>
+<input type="tel" id="phone"/>
 
-<label>Photo (ถ่ายได้สูงสุด 4 รูป)</label>
-<button type="button" class="photo-btn" onclick="takePhoto()">📸 ถ่ายรูป</button>
+<label>Photo (หน้างานจริง, max 4)</label>
+<button type="button" class="photo-btn" onclick="takePhoto()">📸 Take Photo</button>
 <div id="photo-count">0 / 4</div>
-
 <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none"/>
 <div id="preview"></div>
 
-<button id="submitBtn" class="submit-btn" onclick="submitWO()">
-  Submit Work Order
-</button>
+<button id="submitBtn" class="submit-btn" onclick="submitWO()">Submit Work Order</button>
+<div id="status" class="status-text"></div>
 
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxqmuz8OGIeATVLwpsC2xKX-8fZWjzwFch6v_Q50LiqBmXofmkw6xdUoogLgILjtdS5fQ/exec";
+/* ==============================
+ CONFIG
+============================== */
+const API_URL = "https://script.google.com/macros/s/AKfycbzRfWNIS9k7psXzY8Zi_YThivvrvEtzSx4RfV8_GeeRQQ_1yRN3DA6R6E3VDFU5xJAmHQ/exec";
+const el = id => document.getElementById(id);
 
-/* NAV */
+/* ==============================
+ NAV
+============================== */
 function goHome(){
   location.href="https://airservicepcg-ux.github.io/CMMS/";
 }
 
-/* LOAD ASSET */
-fetch(API_URL+"?mode=asset")
-.then(r=>r.json())
-.then(list=>{
-  const sel=document.getElementById("asset_id");
-  list.forEach(a=>{
+/* ==============================
+ LOAD ASSET LIST
+============================== */
+fetch(API_URL + "?mode=asset")
+.then(r => r.json())
+.then(list => {
+  const sel = el("asset_id");
+  sel.innerHTML = `<option value="">-- Select Asset --</option>`;
+  list.forEach(id=>{
     const o=document.createElement("option");
-    o.value=a; o.textContent=a;
+    o.value=id;
+    o.textContent=id;
     sel.appendChild(o);
   });
 });
 
-/* QR */
+/* ==============================
+ ASSET DETAIL
+============================== */
+async function loadAssetDetail(assetId){
+  if(!assetId){
+    el("assetDetail").style.display="none";
+    return;
+  }
+  const r = await fetch(API_URL+"?mode=assetDetail&asset_id="+encodeURIComponent(assetId));
+  const a = await r.json();
+  if(a.error) return;
+
+  el("assetDetail").style.display="block";
+  el("d_name").innerText = a.asset_name || "";
+  el("d_class").innerText = a.asset_class || "";
+  el("d_kw").innerText = a.kw || "";
+  el("d_hp").innerText = a.hp || "";
+  el("d_line").innerText = a.line || "";
+  el("d_location").innerText = a.location || "";
+  el("d_status").innerText = a.status || "";
+  el("d_desc").innerText = a.description || "";
+}
+el("asset_id").addEventListener("change",e=>{
+  loadAssetDetail(e.target.value);
+});
+
+/* ==============================
+ QR SCAN
+============================== */
 let qr;
 function openQRScanner(){
-  document.getElementById("qr-reader").style.display="block";
-  document.getElementById("closeQR").style.display="block";
-  qr=new Html5Qrcode("qr-reader");
+  el("qr-reader").style.display="block";
+  el("closeQR").style.display="block";
+  qr = new Html5Qrcode("qr-reader");
   qr.start({facingMode:"environment"},{fps:10,qrbox:250},txt=>{
-    document.getElementById("asset_id").value=txt.trim();
+    el("asset_id").value = txt.trim();
+    loadAssetDetail(txt.trim());
     closeQR();
   });
 }
 function closeQR(){
-  if(qr) qr.stop();
-  document.getElementById("qr-reader").style.display="none";
-  document.getElementById("closeQR").style.display="none";
+  if(qr){ qr.stop().catch(()=>{}); qr=null; }
+  el("qr-reader").style.display="none";
+  el("closeQR").style.display="none";
 }
 
-/* PHOTO */
+/* ==============================
+ PHOTO
+============================== */
 let images=[];
 const maxPhotos=4;
-
 function takePhoto(){
   if(images.length>=maxPhotos){
-    alert("ครบ 4 รูปแล้ว");
+    alert("ถ่ายได้สูงสุด 4 รูป");
     return;
   }
-  document.getElementById("cameraInput").click();
+  el("cameraInput").click();
 }
-
-document.getElementById("cameraInput").addEventListener("change",()=>{
-  const file=cameraInput.files[0];
+el("cameraInput").addEventListener("change",()=>{
+  const file = el("cameraInput").files[0];
   if(!file) return;
   const r=new FileReader();
   r.onload=()=>{
     images.push(r.result);
     const img=document.createElement("img");
     img.src=r.result;
-    preview.appendChild(img);
-    document.getElementById("photo-count").textContent=images.length+" / "+maxPhotos;
+    el("preview").appendChild(img);
+    el("photo-count").innerText = images.length+" / "+maxPhotos;
   };
   r.readAsDataURL(file);
 });
 
-/* SUBMIT WITH UX */
+/* ==============================
+ SUBMIT (✔ FIXED)
+============================== */
 async function submitWO(){
-  const btn=document.getElementById("submitBtn");
-  if(btn.classList.contains("loading")) return;
+  if(!el("asset_id").value || !el("problem").value){
+    alert("กรุณาเลือก Asset และกรอก Problem");
+    return;
+  }
 
-  btn.classList.add("loading");
-  btn.disabled=true;
-  btn.innerText="⏳ Sending...";
+  el("submitBtn").disabled = true;
+  el("status").innerText = "⏳ กำลังส่งข้อมูล...";
+
+  const payload={
+    asset_id:el("asset_id").value,
+    line:el("line").value,
+    problem:el("problem").value,
+    priority:el("priority").value,
+    owner:el("owner").value,
+    email:el("email").value,
+    phone:el("phone").value,
+    images:images
+  };
 
   try{
-    const payload={
-      asset_id:asset_id.value,
-      line:line.value,
-      problem:problem.value,
-      priority:priority.value,
-      owner:owner.value,
-      email:email.value,
-      phone:phone.value,
-      images:images
-    };
-
-    const res=await fetch(API_URL,{
+    const r = await fetch(API_URL,{
       method:"POST",
-      body:JSON.stringify(payload)
+      body:JSON.stringify(payload)   // ❗ ไม่มี headers
     });
 
-    const d=await res.json();
+    const text = await r.text();
+    const d = JSON.parse(text);
 
     if(d.status==="success"){
-      btn.classList.remove("loading");
-      btn.classList.add("success");
-      btn.innerText="✅ Created";
-
-      alert("Created "+d.wo_id);
-
-      setTimeout(()=>{
-        btn.classList.remove("success");
-        btn.innerText="Submit Work Order";
-        btn.disabled=false;
-        location.reload();
-      },1200);
+      alert("✅ Created "+d.wo_id);
+      location.reload();
     }else{
-      throw new Error(d.message||"Submit failed");
+      alert("❌ GAS Error\n"+text);
+      el("submitBtn").disabled=false;
+      el("status").innerText="";
     }
   }catch(err){
-    alert("❌ Error sending data");
     console.error(err);
-    btn.classList.remove("loading");
-    btn.innerText="Submit Work Order";
-    btn.disabled=false;
+    alert("❌ Network / GAS Error\n"+err.message);
+    el("submitBtn").disabled=false;
+    el("status").innerText="";
   }
 }
 </script>
